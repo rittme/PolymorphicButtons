@@ -24,11 +24,14 @@ PMButton::PMButton(int pinNum)
   _pinNum = pinNum;
 }
 
-void PMButton::begin()
+void PMButton::begin(int activeStatus, bool pull_up)
 {
   pinMode(_pinNum, INPUT);
-  digitalWrite(_pinNum, HIGH);
-  
+  if (pull_up)
+  {
+    digitalWrite(_pinNum, HIGH);
+  }
+  _activeStatus = activeStatus;
   _downTime = -1;
   _upTime = -1;
 }
@@ -60,7 +63,7 @@ void PMButton::checkSwitch()
   _currentstate = digitalRead(_pinNum);// read the button
   
   // Button pressed down
-  if ((_currentstate == LOW) && (_previousstate == HIGH) && ((millis() - _upTime) > _debounce))
+  if ((_currentstate == _activeStatus) && (_previousstate == !_activeStatus) && ((millis() - _upTime) > _debounce))
   {
     _downTime = millis();
     _ignoreUp = false;
@@ -89,7 +92,7 @@ void PMButton::checkSwitch()
   }
   
   // Button released
-  else if ((_currentstate == HIGH) && (_previousstate == LOW) && (millis() - _downTime) > _debounce && !_doubleClickedEventPast)
+  else if ((_currentstate == !_activeStatus) && (_previousstate == _activeStatus) && (millis() - _downTime) > _debounce && !_doubleClickedEventPast)
   {
     _released = true;
 
@@ -112,14 +115,14 @@ void PMButton::checkSwitch()
   }
   
   // Test for normal click event: _dcGap expired
-  if ( _currentstate == HIGH && (millis() - _upTime) >= _dcGap && _dcWaiting && !_dcOnUp && _singleOK )
+  if (_currentstate == !_activeStatus && (millis() - _upTime) >= _dcGap && _dcWaiting && !_dcOnUp && _singleOK)
   {
     _clicked = true;
     _dcWaiting = false;
   }
   
   // Test for hold
-  if (_currentstate == LOW && (millis() - _downTime) >= _holdTime)
+  if (_currentstate == _activeStatus && (millis() - _downTime) >= _holdTime)
   {
     // Trigger "normal" hold
     if (not _holdEventPast)

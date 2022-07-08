@@ -28,7 +28,7 @@ class PMButton
   public:
   PMButton(int pinNum);//constructor
   //setup
-  void begin();
+  void begin(int activeStatus = LOW, bool pull_up = true);
   void debounce(long value), dcGap(long value), holdTime(long value), longHoldTime(long value);
   //status
   bool held(), heldLong(), clicked(), doubleClicked(), pressed(), released();
@@ -38,6 +38,7 @@ class PMButton
   private:
   //setup
   int _pinNum; // The Button Pin
+  int _activeStatus;   // The active status of the button
   long _debounce = 10; // ms debounce period to prevent flickering when pressing or releasing the button
   long _dcGap = 200; // max ms between clicks for a double click event
   long _holdTime = 2000; // ms hold period: how long to wait for press+hold event
